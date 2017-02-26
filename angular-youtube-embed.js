@@ -1,5 +1,5 @@
 /* global YT */
-angular.module('youtube-embed', ['ng'])
+angular.module('youtube-embed', [])
 .service ('youtubeEmbedUtils', ['$window', '$rootScope', function ($window, $rootScope) {
     var Service = {}
 
@@ -94,6 +94,7 @@ angular.module('youtube-embed', ['ng'])
     if (typeof YT === "undefined") {
         // ...grab on to global callback, in case it's eventually loaded
         $window.onYouTubeIframeAPIReady = applyServiceIsReady;
+        console.log('Unable to find YouTube iframe library on this page.')
     } else if (YT.loaded) {
         Service.ready = true;
     } else {
@@ -191,11 +192,15 @@ angular.module('youtube-embed', ['ng'])
 
             function loadPlayer () {
                 if (scope.videoId || scope.playerVars.list) {
-                    if (scope.player && typeof scope.player.destroy === 'function') {
-                        scope.player.destroy();
+                    if (scope.player) {
+                        // player already exists do not replace instead use old player
+                        if(scope.playerVars.list)
+                          scope.player.loadPlaylist({ list: scope.playerVars.list, index: 0, suggestedQuality: "default"});
+                        else
+                          scope.player.loadVideoById(scope.videoId, 0, 'default');
+                    } else {
+                        scope.player = createPlayer();
                     }
-
-                    scope.player = createPlayer();
                 }
             };
 
